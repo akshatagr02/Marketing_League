@@ -1,0 +1,912 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        576
+      ],
+      "id": "6d3e80aa-a09f-4a60-8b71-129b69766954",
+      "name": "Telegram Trigger",
+      "webhookId": "834a8ebb-8d95-45b0-b6f6-4118425b51b8",
+      "credentials": {
+        "telegramApi": {
+          "id": "WrOgwxPl38hHgPKl",
+          "name": "Marketing_league"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d7d2c99c-6157-4e24-a81d-af1279d87989",
+              "leftValue": "={{ $json.moment }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1120,
+        272
+      ],
+      "id": "49d14842-f6b2-4c92-b9b7-699036cee348",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16oMghnHWED5rkofBvhN2KRJZCKK4NVHW46Zez-E8iWo",
+          "mode": "list",
+          "cachedResultName": "Marketing_league",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16oMghnHWED5rkofBvhN2KRJZCKK4NVHW46Zez-E8iWo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 592806605,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16oMghnHWED5rkofBvhN2KRJZCKK4NVHW46Zez-E8iWo/edit#gid=592806605"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prev_runs": "={{ $('Merge').item.json.score_team1.split('/')[0]}}",
+            "prev_wickets": "={{ $('Merge').item.json.score_team1.split('/')[1]}}",
+            "prev_overs": "={{ $('Merge').item.json.over_team1 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prev_runs",
+              "displayName": "prev_runs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prev_wickets",
+              "displayName": "prev_wickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prev_overs",
+              "displayName": "prev_overs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        640
+      ],
+      "id": "867981c8-c5b4-459f-856d-a472110b7dad",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "69Ze9pdkWslBO75q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const currRuns = parseInt($('IPL Api').item.json.matches[\"Match 1\"].score_1.split(\"/\")[0]) || 0;\n\nconst currWickets = parseInt($('IPL Api').item.json.matches[\"Match 1\"].score_1.split(\"/\")[1]) || 0;\n\nconst currOvers = $('IPL Api').item.json.matches[\"Match 1\"].overs_1;\n\n// Previous data from current input item\nconst prevRuns = parseInt($json.prev_runs) || 0;\nconst prevWickets = parseInt($json.prev_wickets) || 0;\n\nconst runDiff = currRuns - prevRuns;\nconst wicketDiff = currWickets - prevWickets;\n\nlet moment = null;\n\nif (runDiff >= 6) {\n  moment = \"six\";\n}\nelse if (runDiff === 4) {\n  moment = \"boundary\";\n}\nelse if (wicketDiff > 0) {\n  moment = \"wicket\";\n}\nelse if ($('IPL Api').item.json.status === \"completed\") {\n  moment = \"win\";\n}\n\nreturn [{\n  json: {\n    moment,\n    runs: currRuns,\n    wickets: currWickets,\n    overs: currOvers,\n    score: currRuns + \"/\" + currWickets,\n    player: \"MI Batsman\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        272
+      ],
+      "id": "f0687bc6-5df6-49e2-a23f-7b721cbf3015",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-goog-api-key"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"You are a Hinglish copywriter for a brand during a live IPL match.\\n\\nBrand Name: {{ $json.brand_name }}\\nProduct Type: {{ $json.product_type }}\\nTone: {{ $json.brand_tone }}\\nCricket Moment: {{ $('Moment').item.json.moment }}\\n\\nWrite ONE short Hinglish caption.\\nMaximum 12 words.\\nUse emoji if relevant.\\nNo hashtags.\\nNo quotation marks.\\nNo explanation.\\nOnly return the caption text.\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        160
+      ],
+      "id": "85817f95-c420-48d8-832c-d5f3efcd542d",
+      "name": "Line Generator"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hcti.io/v1/image",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "Basic api key"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "html",
+              "value": "=<div style=\"\nbackground:linear-gradient(135deg,#0f172a,#1e293b);\nwidth:600px;\nheight:600px;\npadding:30px;\nborder-radius:24px;\nfont-family:sans-serif;\ntext-align:center;\ndisplay:flex;\nflex-direction:column;\njustify-content:space-between;\nbox-sizing:border-box;\noverflow:hidden;\nposition:relative;\n\">\n\n  <!-- Top Glow -->\n  <div style=\"\n  position:absolute;\n  top:-80px;\n  right:-80px;\n  width:220px;\n  height:220px;\n  background:#f59e0b33;\n  border-radius:50%;\n  filter:blur(40px);\n  \"></div>\n\n  <!-- Match Moment -->\n  <div style=\"\n  color:#facc15;\n  font-size:42px;\n  font-weight:800;\n  letter-spacing:1px;\n  z-index:2;\n  \">\n    🏏 {{ $('Moment').item.json.moment.toUpperCase() }}\n  </div>\n\n  <!-- Score -->\n  <div style=\"\n  color:#cbd5e1;\n  font-size:18px;\n  z-index:2;\n  \">\n    Over {{ $json.over_team1 }}/20\n    \n    Score {{ $json.score_team1 }}\n  </div>\n\n  <!-- Product Image -->\n  <div style=\"z-index:2;\">\n    <img \n      src=\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSG0AGBFKJf5x8ARCGvMVmhYTriiNN8s42jwQ&s\"\n      style=\"\n      width:190px;\n      height:190px;\n      object-fit:contain;\n      border-radius:20px;\n      background:white;\n      padding:12px;\n      box-shadow:0 10px 25px rgba(0,0,0,0.4);\n      \"\n    />\n  </div>\n\n  <!-- AI Caption -->\n  <div style=\"\n  color:white;\n  font-size:28px;\n  font-weight:700;\n  line-height:1.4;\n  padding:0 20px;\n  z-index:2;\n  \">\n    {{ $('Line Generator').item.json.candidates[0].content.parts[0].text }}\n  </div>\n\n  <!-- Brand Name -->\n  <div style=\"\n  background:linear-gradient(90deg,#f97316,#ea580c);\n  color:white;\n  padding:16px;\n  border-radius:16px;\n  font-size:24px;\n  font-weight:700;\n  z-index:2;\n  box-shadow:0 6px 18px rgba(249,115,22,0.4);\n  \">\n    {{ $('Get the brand data').item.json.brand_name }}\n  </div>\n\n</div>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        144
+      ],
+      "id": "7cee1cc6-18c2-434f-9724-e9490b3a89d9",
+      "name": "hcti.io"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "19Pc91KDBsM7tk3M-tZpqPiUaH_4g7sgaSJ2hpI0hlp0",
+          "mode": "list",
+          "cachedResultName": "-Marketing_league_chat",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19Pc91KDBsM7tk3M-tZpqPiUaH_4g7sgaSJ2hpI0hlp0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19Pc91KDBsM7tk3M-tZpqPiUaH_4g7sgaSJ2hpI0hlp0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatId": "={{ $json.message.from.id }}"
+          },
+          "matchingColumns": [
+            "chatId"
+          ],
+          "schema": [
+            {
+              "id": "chatId",
+              "displayName": "chatId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1936,
+        576
+      ],
+      "id": "b511c691-597e-4283-a925-da2ba05e75eb",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "69Ze9pdkWslBO75q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "34ebd0d0-c4e9-46c0-8c6a-20c6757b3385",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Loop Over Items').item.json.chatId }}",
+        "file": "={{ $('hcti.io').item.json.url }}",
+        "additionalFields": {
+          "caption": "={{ $('Merge').item.json.Caption }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        160
+      ],
+      "id": "3f040a9f-50e7-4ff0-8748-a32058320692",
+      "name": "Send a photo message",
+      "webhookId": "6deea6c4-8929-4f37-9942-d441cd20a8e5",
+      "credentials": {
+        "telegramApi": {
+          "id": "WrOgwxPl38hHgPKl",
+          "name": "Marketing_league"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a74f24-f922-49af-a291-5987829b300c",
+              "name": "Caption",
+              "value": "=🏏 {{ $('IPL DATA').item.json.team1 }} vs {{ $('IPL DATA').item.json.team2 }} — LIVE\n\n{{ $('Line Generator').item.json.candidates[0].content.parts[0].text }}.\n\n{{ $('IPL DATA').item.json.team2 }} Is ON ⚡\n📊 Score: {{ $('IPL DATA').item.json.score_team2 }}\n🕐 Over: {{ $('IPL DATA').item.json.over_team2 }}/20\n\n🏷 Brand: {{ $('Get the brand data').item.json.brand_name }}\n📦 {{ $('Get the brand data').item.json.product_type }}\n\nPowered by MarketingLeague AI 🤖",
+              "type": "string"
+            },
+            {
+              "id": "d2b4f0bc-641e-41e8-af7b-b2475db1dabc",
+              "name": "score_team2",
+              "value": "={{ $('IPL DATA').item.json.score_team2 }}",
+              "type": "string"
+            },
+            {
+              "id": "ccf3b5f4-1dc1-4be3-b0ba-560ef8de0731",
+              "name": "over_team2",
+              "value": "={{ $('IPL DATA').item.json.over_team2 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3aa0cb2b-8d53-4312-bf8f-b90e4519d377",
+      "name": "msg1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a74f24-f922-49af-a291-5987829b300c",
+              "name": "Caption",
+              "value": "=🏏 {{ $('IPL DATA').item.json.team1 }} vs {{ $('IPL DATA').item.json.team2 }} — LIVE\n\n\n{{ $('Line Generator').item.json.candidates[0].content.parts[0].text }}.\n\n{{ $('IPL DATA').item.json.team1 }} Is ON ⚡\n📊 Score: {{ $('IPL DATA').item.json.score_team1 }}\n🕐 Over: {{ $('IPL DATA').item.json.over_team1 }}/20\n\n🏷 Brand: {{ $('Get the brand data').item.json.brand_name }}\n📦 {{ $('Get the brand data').item.json.product_type }}\n\nPowered by MarketingLeague AI 🤖",
+              "type": "string"
+            },
+            {
+              "id": "0c6b3cca-ff34-46e1-9aee-d711d8f6d475",
+              "name": "score_team1",
+              "value": "={{ $('IPL DATA').item.json.score_team1 }}",
+              "type": "string"
+            },
+            {
+              "id": "b1275491-f7c7-4fee-9445-0c5a222a1b44",
+              "name": "over_team1",
+              "value": "={{ $('IPL DATA').item.json.over_team1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        288
+      ],
+      "id": "c1e1e8d9-c228-4223-8678-598df951a145",
+      "name": "msg"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        144
+      ],
+      "id": "41efb888-4a25-43f6-a6af-b9442b1ce6e6",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2160,
+        272
+      ],
+      "id": "fdcc3364-e9e6-4d9d-925e-20fb2a1a4da3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f0a10589-edb3-4903-96f9-04613d83ce3e",
+              "name": "moment",
+              "value": "={{ $json.moment || \"Wicket\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        272
+      ],
+      "id": "05d183e0-ce87-429a-b183-16714827bfa9",
+      "name": "Moment"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "16oMghnHWED5rkofBvhN2KRJZCKK4NVHW46Zez-E8iWo",
+          "mode": "list",
+          "cachedResultName": "Marketing_league",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16oMghnHWED5rkofBvhN2KRJZCKK4NVHW46Zez-E8iWo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 592806605,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16oMghnHWED5rkofBvhN2KRJZCKK4NVHW46Zez-E8iWo/edit#gid=592806605"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1648,
+        272
+      ],
+      "id": "5dba1580-2e1d-4382-85ad-f8a5478bc751",
+      "name": "Previous Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "69Ze9pdkWslBO75q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8a8b154f-c1cc-4fea-8718-7397a3b91997",
+              "name": "team1",
+              "value": "={{ $json.live_score['Match 1'].team_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "bbb19353-5eb6-497b-8904-4a74aeec6a96",
+              "name": "team2",
+              "value": "={{ $json.live_score['Match 1'].team_2 }}",
+              "type": "string"
+            },
+            {
+              "id": "1b0ba236-4ed7-47bd-a87a-986f5e831f01",
+              "name": "score_team1",
+              "value": "={{ $json.live_score['Match 1'].score_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "f24658eb-5519-4819-b0c1-3a6bb845fc3b",
+              "name": "score_team2",
+              "value": "={{ $json.live_score['Match 1'].score_2 }}",
+              "type": "string"
+            },
+            {
+              "id": "d19a3cc9-9a9e-43ce-bb0a-4e61f5786c25",
+              "name": "over_team1",
+              "value": "={{ $json.live_score['Match 1'].overs_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "d1eddcc3-d5f1-443f-95a2-53e9a748ee0b",
+              "name": "over_team2",
+              "value": "={{ $json.live_score['Match 1'].overs_2 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1808,
+        272
+      ],
+      "id": "39baf91e-1c28-450d-832a-9a6ec683abfe",
+      "name": "IPL DATA"
+    },
+    {
+      "parameters": {
+        "url": "https://ipl-2026-api-free-oq5c.onrender.com/ipl-2026-live-score-s2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1984,
+        272
+      ],
+      "id": "3dd70929-2194-4b11-a110-4977c63c03b7",
+      "name": "IPL Api"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "15y0bXIN3m2r0zaEjF51OI3BcuYiRV68DgUFODAQi1Ps",
+          "mode": "list",
+          "cachedResultName": "Marketing_league_SMBS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15y0bXIN3m2r0zaEjF51OI3BcuYiRV68DgUFODAQi1Ps/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 240012152,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15y0bXIN3m2r0zaEjF51OI3BcuYiRV68DgUFODAQi1Ps/edit#gid=240012152"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "brand_tone",
+              "lookupValue": "={{ $json.candidates[0].content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -752,
+        160
+      ],
+      "id": "3a9c5ff2-eee9-4e01-9f6e-16bac4a4a973",
+      "name": "Get the brand data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "69Ze9pdkWslBO75q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "701f2090-bc94-4718-904c-384173769b48",
+              "leftValue": "={{ $('IPL DATA').item.json.over_team2 }}",
+              "rightValue": "Yet to bat",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "bb54fa29-f35c-4580-a900-46c32b055f72",
+              "leftValue": "={{ $('IPL DATA').item.json.over_team2 }}",
+              "rightValue": "20.0",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        160
+      ],
+      "id": "dad35a00-fbf4-4a67-be43-33c65e7528d0",
+      "name": "Team 1 is batting or Team 2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19Pc91KDBsM7tk3M-tZpqPiUaH_4g7sgaSJ2hpI0hlp0",
+          "mode": "list",
+          "cachedResultName": "-Marketing_league_chat",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19Pc91KDBsM7tk3M-tZpqPiUaH_4g7sgaSJ2hpI0hlp0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19Pc91KDBsM7tk3M-tZpqPiUaH_4g7sgaSJ2hpI0hlp0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        144
+      ],
+      "id": "9e5cf98e-8e34-4d14-80f8-b84cb38d6cab",
+      "name": "Chat Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "69Ze9pdkWslBO75q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-goog-api-key"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"moment is {{ $json.moment }}. Suggest the best matching brand tone from these options only: Funny & Energetic, Warm & Desi Humor, Motivational. Only return one exact option name and no extra text.\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -928,
+        160
+      ],
+      "id": "af68a9f8-b12f-4f99-8f58-652f338e4dde",
+      "name": "Business Tone"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Business Tone",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Moment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Generator": {
+      "main": [
+        [
+          {
+            "node": "Team 1 is batting or Team 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "hcti.io": {
+      "main": [
+        [
+          {
+            "node": "Chat Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "hcti.io",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "IPL Api",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Moment": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Previous Record": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IPL DATA": {
+      "main": [
+        [
+          {
+            "node": "Previous Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IPL Api": {
+      "main": [
+        [
+          {
+            "node": "IPL DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the brand data": {
+      "main": [
+        [
+          {
+            "node": "Line Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team 1 is batting or Team 2": {
+      "main": [
+        [
+          {
+            "node": "msg1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Tone": {
+      "main": [
+        [
+          {
+            "node": "Get the brand data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5fc4c19f-c49a-4c75-8779-28304291281f",
+  "meta": {
+    "instanceId": "a8f42f866c38ed84ac5ba5e0443b47bc7d09cc0b136eb42b4bf54a66e532662f"
+  },
+  "id": "Pm7MIAAig3QRU0lq",
+  "tags": []
+}

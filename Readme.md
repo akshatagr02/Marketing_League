@@ -6,7 +6,7 @@ Marketing_league detects live cricket match moments and instantly generates AI-p
 
 The platform transforms live cricket emotions into automated marketing opportunities for local businesses, startups, and D2C brands.
 
----
+--
 
 # Features
 
